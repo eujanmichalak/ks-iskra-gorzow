@@ -1,0 +1,4 @@
+cd /c/Users/janmi/iskra-gorzow
+git add . 
+git commit -m "opis zmian" 
+git push
