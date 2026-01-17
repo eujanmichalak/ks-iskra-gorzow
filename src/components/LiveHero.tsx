@@ -3,30 +3,45 @@ import React, { useState, useEffect } from 'react';
 import { Goal, MapPin, Activity } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+// DANE DOMYŚLNE - ŻEBY STRONA NIGDY NIE ZNIKNĘŁA
+const DEFAULT_MATCH = {
+    home_team: 'GOSPODARZ',
+    away_team: 'GOŚĆ',
+    score_home: 0,
+    score_away: 0,
+    current_minute: 0,
+    status: 'scheduled', // scheduled, live, break, finished
+    location: 'Stadion Zawarcie',
+    events: []
+};
+
 export const LiveHero = () => {
-    const [match, setMatch] = useState<any>(null);
+    const [match, setMatch] = useState<any>(DEFAULT_MATCH);
+    
     const logoIskra = "https://scontent.fktw6-1.fna.fbcdn.net/v/t39.30808-6/420048755_876503211141570_1870842103319874308_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=hNIB1eW4zzsQ7kNvwETleDi&_nc_oc=AdlIgngstdCsYf_ofPw4u9AkfV7S4xG-uBse7NWdBgunz7a_5SOEvrTzj5n2OFlq90o5HqkTZWj4VftL-c83ugOm&_nc_zt=23&_nc_ht=scontent.fktw6-1.fna&_nc_gid=1DC7xf588E0vuiD8D3E0zg&oh=00_Afr6Uzkm7v7uH64oAP5o-OPnlcZ4B1Nn1shwq5QxebUXmQ&oe=69676F0F";
     const logoPlaceholder = "https://via.placeholder.com/150/f1f5f9/94a3b8?text=FC";
 
     const fetchFullData = async () => {
-        const { data, error } = await supabase
-            .from('matches')
-            .select('*, match_events(*)')
-            .order('match_date', { ascending: false })
-            .limit(1)
-            .single();
-        
-        if (data) {
-            // Sortujemy wydarzenia od najnowszego (najwyższa minuta)
-            const sortedEvents = data.match_events?.sort((a: any, b: any) => b.minute - a.minute);
-            setMatch({ ...data, events: sortedEvents });
+        try {
+            const { data, error } = await supabase
+                .from('matches')
+                .select('*, match_events(*)')
+                .order('match_date', { ascending: false })
+                .limit(1)
+                .maybeSingle(); // maybeSingle nie wyrzuca błędu przy pustej bazie
+            
+            if (data) {
+                const sortedEvents = data.match_events?.sort((a: any, b: any) => b.minute - a.minute) || [];
+                setMatch({ ...data, events: sortedEvents });
+            }
+        } catch (e) {
+            console.error("Błąd pobierania:", e);
         }
     };
 
     useEffect(() => {
         fetchFullData();
 
-        // SUBSKRYPCJA LIVE - To zastępuje Twój stary interval 2000ms
         const channel = supabase
             .channel('public:matches')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => fetchFullData())
@@ -36,10 +51,9 @@ export const LiveHero = () => {
         return () => { supabase.removeChannel(channel); };
     }, []);
 
-    if (!match) return null;
-
     const getLogo = (teamName: string) => teamName?.toLowerCase().includes('iskra') ? logoIskra : logoPlaceholder;
 
+    // UI BEZ ZMIAN
     return (
         <section className="pt-24 md:pt-32 pb-12 md:pb-16 bg-slate-50 relative overflow-hidden">
             <div className="max-w-5xl mx-auto px-4 md:px-6 relative z-10">
@@ -48,18 +62,23 @@ export const LiveHero = () => {
                     <h1 className="text-3xl md:text-6xl font-[1000] text-slate-900 uppercase italic tracking-tighter leading-none">
                         Śledź nasz mecz <span className="text-iskra-red">na żywo</span>
                     </h1>
+                    <p className="text-slate-400 font-medium mt-4 max-w-lg mx-auto text-xs md:text-base px-4">
+                        Bądź na bieżąco z każdym golem i kluczową akcją. Relacja aktualizowana w czasie rzeczywistym.
+                    </p>
                 </div>
 
                 <div className="bg-white rounded-[32px] md:rounded-[40px] shadow-2xl border border-slate-100 overflow-hidden">
+                    {/* STATUS LIVE */}
                     <div className="flex justify-center pt-6 md:pt-8">
                         <div className={`px-4 py-1 rounded-full flex items-center gap-2 ${match.status === 'live' ? 'bg-red-600 animate-pulse' : 'bg-slate-400'}`}>
                             <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                             <span className="text-[10px] text-white font-[1000] uppercase tracking-widest">
-                                {match.status === 'live' ? `Live ${match.current_minute}'` : match.status === 'break' ? 'Przerwa' : 'Mecz zakończony'}
+                                {match.status === 'live' ? `Live ${match.current_minute}'` : match.status === 'break' ? 'Przerwa' : match.status === 'finished' ? 'Koniec' : 'Oczekiwanie'}
                             </span>
                         </div>
                     </div>
 
+                    {/* WYNIK */}
                     <div className="flex flex-row items-center justify-between md:justify-center gap-2 md:gap-12 py-8 md:py-10 px-4 md:px-10">
                         <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 flex-1 justify-center md:justify-end text-center md:text-right">
                             <h2 className="text-[10px] md:text-2xl font-[1000] uppercase italic text-slate-900 order-2 md:order-1 leading-tight">{match.home_team}</h2>
@@ -78,6 +97,7 @@ export const LiveHero = () => {
                         </div>
                     </div>
 
+                    {/* TIMELINE */}
                     <div className="bg-slate-50/50 border-t border-slate-100 py-8 md:py-10 px-4 md:px-6">
                         <div className="max-w-md mx-auto relative">
                             {match.events && match.events.length > 0 ? (
