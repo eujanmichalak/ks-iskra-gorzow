@@ -1,163 +1,197 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Square, Plus, Save, MapPin, Clock } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { LIVE_MATCH } from '@/lib/data';
 
-// DANE STARTOWE - Jeśli baza jest pusta, użyjemy tego formularza
-const DEFAULT_FORM = {
-    home_team: 'Iskra Głogów',
-    away_team: 'Rywal',
-    score_home: 0,
-    score_away: 0,
-    current_minute: 0,
-    status: 'scheduled',
-    location: 'Stadion Zawarcie'
-};
+interface MatchEvent {
+    team: 'home' | 'away';
+    min: number;
+    player: string;
+}
+
+interface MatchState {
+    home: string;
+    away: string;
+    scoreHome: number;
+    scoreAway: number;
+    minute: number;
+    status: string;
+    location: string;
+    events: MatchEvent[];
+}
 
 export const LiveMatchEditor = () => {
-    // Zawsze startujemy z danymi, nigdy z NULLem
-    const [match, setMatch] = useState<any>(DEFAULT_FORM);
+    const [match, setMatch] = useState<MatchState>({ ...LIVE_MATCH });
     const [newGoalPlayer, setNewGoalPlayer] = useState('');
     const [newGoalMin, setNewGoalMin] = useState('');
     const [newGoalTeam, setNewGoalTeam] = useState<'home' | 'away'>('home');
 
-    // Pobieranie danych (zabezpieczone)
-    const loadMatch = async () => {
-        const { data } = await supabase
-            .from('matches')
-            .select('*, match_events(*)')
-            .order('match_date', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-        
-        if (data) setMatch(data);
+    useEffect(() => {
+        const saved = localStorage.getItem('iskra_live_match');
+        if (saved) setMatch(JSON.parse(saved));
+    }, []);
+
+    const save = (updatedMatch: MatchState) => {
+        const cleanMatch = {
+            ...updatedMatch,
+            minute: updatedMatch.minute > 90 ? 90 : updatedMatch.minute
+        };
+        localStorage.setItem('iskra_live_match', JSON.stringify(cleanMatch));
+        setMatch(cleanMatch);
+        window.dispatchEvent(new Event('iskra_data_update'));
     };
 
-    useEffect(() => { loadMatch(); }, []);
-
-    // TIMER - Odpala się TYLKO jeśli mamy ID meczu i status Live
     useEffect(() => {
         let interval: any;
-        // Sprawdzamy czy match.id istnieje, żeby nie sypać błędami
-        if (match?.id && match?.status === 'live' && match?.current_minute < 90) {
-            interval = setInterval(async () => {
-                const nextMin = match.current_minute + 1;
-                await supabase
-                    .from('matches')
-                    .update({ current_minute: nextMin })
-                    .eq('id', match.id);
-                setMatch((p: any) => ({ ...p, current_minute: nextMin }));
+        if (match.status === 'live' && match.minute < 90) {
+            interval = setInterval(() => {
+                const currentSaved = localStorage.getItem('iskra_live_match');
+                const latestData = currentSaved ? JSON.parse(currentSaved) : match;
+
+                if (latestData.minute < 90) {
+                    const updated = {
+                        ...latestData,
+                        minute: latestData.minute + 1
+                    };
+                    save(updated);
+                }
             }, 60000);
         }
         return () => clearInterval(interval);
-    }, [match?.status, match?.current_minute, match?.id]);
+    }, [match.status, match.minute]);
 
-    // MAGICZNA FUNKCJA ZAPISU - Tworzy nowy mecz jeśli go nie ma!
-    const handleSaveOrUpdate = async (updates: any) => {
-        const fullData = { ...match, ...updates };
+    const saveToHistory = () => {
+        const savedHistory = localStorage.getItem('iskra_history');
+        const history = savedHistory ? JSON.parse(savedHistory) : [];
 
-        if (match.id) {
-            // Aktualizacja istniejącego
-            const { error } = await supabase.from('matches').update(updates).eq('id', match.id);
-            if (!error) setMatch(fullData);
-        } else {
-            // TWORZENIE NOWEGO (Jeśli baza pusta)
-            const { data, error } = await supabase.from('matches').insert([fullData]).select().single();
-            if (data) setMatch(data);
-        }
+        const newEntry = {
+            id: Date.now().toString(),
+            home: match.home,
+            away: match.away,
+            sH: match.scoreHome,
+            sA: match.scoreAway,
+            location: match.location || 'Stadion Zawarcie',
+            date: new Date().toLocaleDateString('pl-PL', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+        };
+
+        localStorage.setItem('iskra_history', JSON.stringify([newEntry, ...history]));
     };
 
-    const addGoal = async () => {
+    const handleStop = () => {
+        if (!confirm("Zakończyć mecz? Wynik zostanie zapisany w historii i sekcji ligowej.")) return;
+        saveToHistory();
+        const resetMatch: MatchState = {
+            ...match,
+            status: 'finished',
+            minute: 0,
+            scoreHome: 0,
+            scoreAway: 0,
+            events: []
+        };
+        save(resetMatch);
+        alert("Mecz zapisany pomyślnie!");
+    };
+
+    const addGoal = () => {
         if (!newGoalPlayer) return;
-        // Jeśli mecz nie ma ID, najpierw go zapiszmy
-        if (!match.id) {
-            alert("Najpierw kliknij 'Zapisz Dane Meczowe', żeby utworzyć mecz w bazie!");
-            return;
-        }
+        const currentSaved = localStorage.getItem('iskra_live_match');
+        const latestData = currentSaved ? JSON.parse(currentSaved) : match;
 
-        const min = parseInt(newGoalMin) || match.current_minute;
-        
-        const { error: evError } = await supabase.from('match_events').insert([{
-            match_id: match.id,
-            minute: min,
-            player_name: newGoalPlayer,
-            team: newGoalTeam,
-            event_type: 'goal'
-        }]);
+        const goalMin = Number(newGoalMin) || latestData.minute;
+        const newEvent: MatchEvent = { team: newGoalTeam, min: goalMin, player: newGoalPlayer };
 
-        if (!evError) {
-            const scoreKey = newGoalTeam === 'home' ? 'score_home' : 'score_away';
-            const newVal = match[scoreKey] + 1;
-            await handleSaveOrUpdate({ [scoreKey]: newVal });
-            
-            setNewGoalPlayer('');
-            setNewGoalMin('');
-            loadMatch(); 
-        }
-    };
+        const updatedMatch: MatchState = {
+            ...latestData,
+            scoreHome: newGoalTeam === 'home' ? latestData.scoreHome + 1 : latestData.scoreHome,
+            scoreAway: newGoalTeam === 'away' ? latestData.scoreAway + 1 : latestData.scoreAway,
+            events: [newEvent, ...(latestData.events || [])]
+        };
 
-    const handleStop = async () => {
-        if(!confirm("Zakończyć mecz i zapisać wynik?")) return;
-        await handleSaveOrUpdate({ status: 'finished' });
+        save(updatedMatch);
+        setNewGoalPlayer('');
+        setNewGoalMin('');
     };
 
     return (
         <div className="bg-white rounded-[32px] md:rounded-[40px] p-5 md:p-8 shadow-2xl border border-slate-100 space-y-6 md:space-y-8 text-slate-900">
+            {/* Header Kontrolny */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h3 className="text-xl md:text-2xl font-[1000] uppercase italic tracking-tighter">MECZ LIVE - STEROWANIE</h3>
+                <h3 className="text-xl md:text-2xl font-[1000] uppercase italic tracking-tighter">MECZ LIVE</h3>
+
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <button onClick={() => handleSaveOrUpdate({ status: 'live' })} className="flex-1 sm:flex-none p-4 bg-green-500 text-white rounded-2xl shadow-lg hover:scale-105 transition-all flex justify-center"><Play size={20}/></button>
-                    <button onClick={() => handleSaveOrUpdate({ status: 'break' })} className="flex-1 sm:flex-none p-4 bg-orange-500 text-white rounded-2xl shadow-lg hover:scale-105 transition-all flex justify-center"><Pause size={20}/></button>
-                    <button onClick={handleStop} className="flex-1 sm:flex-none p-4 bg-slate-900 text-white rounded-2xl shadow-lg hover:scale-105 transition-all flex justify-center"><Square size={20}/></button>
+                    <button onClick={() => save({ ...match, status: 'live' })} className="flex-1 sm:flex-none p-4 bg-green-500 text-white rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all flex justify-center"><Play size={20} /></button>
+                    <button onClick={() => save({ ...match, status: 'break' })} className="flex-1 sm:flex-none p-4 bg-orange-500 text-white rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all flex justify-center"><Pause size={20} /></button>
+                    <button onClick={handleStop} title="Zakończ i Zapisz" className="flex-1 sm:flex-none p-4 bg-slate-900 text-white rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all flex justify-center"><Square size={20} /></button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-                <div className="space-y-4 bg-slate-50 p-4 md:p-6 rounded-[28px] border border-slate-100 shadow-inner">
+                {/* Panel Drużyn */}
+                <div className="space-y-4 bg-slate-50 p-4 md:p-6 rounded-[28px] md:rounded-[32px] border border-slate-100">
                     <p className="text-[10px] font-black uppercase text-slate-400 ml-2">Wynik i Czas</p>
-                    <div className="grid grid-cols-2 gap-2">
-                        <input type="text" value={match.home_team} onChange={e => setMatch({...match, home_team: e.target.value})} className="p-3 rounded-xl border border-slate-200 font-bold text-xs md:text-sm bg-white outline-none focus:border-slate-950" placeholder="Gospodarz"/>
-                        <input type="text" value={match.away_team} onChange={e => setMatch({...match, away_team: e.target.value})} className="p-3 rounded-xl border border-slate-200 font-bold text-xs md:text-sm bg-white outline-none focus:border-slate-950" placeholder="Gość"/>
+                    <div className="grid grid-cols-2 gap-2 md:gap-3">
+                        <input type="text" value={match.home} onChange={e => setMatch({ ...match, home: e.target.value })} className="p-3 rounded-xl border border-slate-200 font-bold text-xs md:text-sm bg-white outline-none focus:border-slate-950" placeholder="Gospodarz" />
+                        <input type="text" value={match.away} onChange={e => setMatch({ ...match, away: e.target.value })} className="p-3 rounded-xl border border-slate-200 font-bold text-xs md:text-sm bg-white outline-none focus:border-slate-950" placeholder="Gość" />
                     </div>
-                    <div className="flex items-center gap-4 justify-center py-4">
-                        <input type="number" value={match.score_home} onChange={e => setMatch({...match, score_home: parseInt(e.target.value) || 0 })} className="w-16 md:w-20 text-center text-3xl md:text-4xl font-black p-2 rounded-2xl bg-white border border-slate-200 shadow-inner outline-none"/>
-                        <div className="flex flex-col items-center bg-white px-3 py-2 rounded-2xl border border-slate-200 shadow-sm min-w-[60px]">
-                             <Clock size={14} className="text-iskra-red mb-1" />
-                             <div className="flex items-center">
-                                <input type="number" value={match.current_minute} onChange={e => setMatch({...match, current_minute: parseInt(e.target.value) || 0 })} className="w-8 text-center font-black text-sm outline-none bg-transparent"/>
+                    <div className="flex items-center gap-2 md:gap-4 justify-center py-2 md:py-4 text-slate-900">
+                        <input type="number" value={match.scoreHome} onChange={e => setMatch({ ...match, scoreHome: parseInt(e.target.value) || 0 })} className="w-16 md:w-20 text-center text-3xl md:text-4xl font-black p-2 rounded-2xl bg-white border border-slate-200 shadow-inner outline-none" />
+                        <div className="flex flex-col items-center bg-white px-3 md:px-4 py-2 rounded-2xl border border-slate-200 shadow-sm min-w-[60px]">
+                            <Clock size={14} className="text-iskra-red mb-1" />
+                            <div className="flex items-center">
+                                <input type="number" value={match.minute} onChange={e => setMatch({ ...match, minute: parseInt(e.target.value) || 0 })} className="w-8 text-center font-black text-sm outline-none bg-transparent" />
                                 <span className="text-[10px] font-bold text-slate-400">'</span>
-                             </div>
+                            </div>
                         </div>
-                        <input type="number" value={match.score_away} onChange={e => setMatch({...match, score_away: parseInt(e.target.value) || 0 })} className="w-16 md:w-20 text-center text-3xl md:text-4xl font-black p-2 rounded-2xl bg-white border border-slate-200 shadow-inner outline-none"/>
+                        <input type="number" value={match.scoreAway} onChange={e => setMatch({ ...match, scoreAway: parseInt(e.target.value) || 0 })} className="w-16 md:w-20 text-center text-3xl md:text-4xl font-black p-2 rounded-2xl bg-white border border-slate-200 shadow-inner outline-none" />
                     </div>
                 </div>
 
-                <div className="space-y-4 bg-slate-50 p-4 md:p-6 rounded-[28px] border border-slate-100 shadow-inner">
-                    <div className="flex justify-between items-center">
-                        <h4 className="font-black uppercase text-[10px] tracking-widest text-slate-400 italic">Strzelcy bramek</h4>
-                        <span className="text-[9px] font-black text-iskra-red uppercase italic bg-white px-2 py-1 rounded-lg border">Dla: {newGoalTeam === 'home' ? match.home_team : match.away_team}</span>
+                {/* Panel Wydarzeń */}
+                <div className="space-y-4 bg-slate-50 p-4 md:p-6 rounded-[28px] md:rounded-[32px] border border-slate-100">
+                    <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2">
+                        <h4 className="font-black uppercase text-[10px] md:text-xs tracking-widest text-slate-400">Strzelcy bramek</h4>
+                        <span className="text-[9px] font-black text-iskra-red uppercase italic bg-white px-2 py-1 rounded-lg border border-slate-100">
+                            Dla: {newGoalTeam === 'home' ? (match.home || 'Gosp.') : (match.away || 'Gość')}
+                        </span>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setNewGoalTeam('home')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase border transition-all ${newGoalTeam === 'home' ? 'bg-slate-900 text-white' : 'bg-white'}`}>{match.home_team}</button>
-                        <button onClick={() => setNewGoalTeam('away')} className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase border transition-all ${newGoalTeam === 'away' ? 'bg-slate-900 text-white' : 'bg-white'}`}>{match.away_team}</button>
+                        <button
+                            onClick={() => setNewGoalTeam('home')}
+                            className={`flex-1 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase border transition-all truncate px-2
+                                ${newGoalTeam === 'home' ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-900'}`}
+                        >
+                            {match.home || 'Gospodarz'}
+                        </button>
+                        <button
+                            onClick={() => setNewGoalTeam('away')}
+                            className={`flex-1 py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase border transition-all truncate px-2
+                                ${newGoalTeam === 'away' ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-900'}`}
+                        >
+                            {match.away || 'Gość'}
+                        </button>
                     </div>
-                    <input type="text" placeholder="Nazwisko strzelca" value={newGoalPlayer} onChange={e => setNewGoalPlayer(e.target.value)} className="w-full p-3 rounded-xl border border-slate-200 font-bold text-sm bg-white outline-none focus:border-slate-950"/>
+                    <input type="text" placeholder="Nazwisko strzelca" value={newGoalPlayer} onChange={e => setNewGoalPlayer(e.target.value)} className="w-full p-3 rounded-xl border border-slate-200 font-bold text-sm bg-white text-slate-900 outline-none focus:border-slate-950" />
                     <div className="flex gap-2">
-                        <input type="number" placeholder="Min" value={newGoalMin} onChange={e => setNewGoalMin(e.target.value)} className="w-20 p-3 rounded-xl border border-slate-200 font-bold text-sm bg-white outline-none focus:border-slate-950"/>
-                        <button onClick={addGoal} className="flex-1 bg-slate-900 text-white rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-iskra-red transition-all shadow-lg">
-                            <Plus size={16}/> Dodaj Gol
+                        <input type="number" placeholder="Min" value={newGoalMin} onChange={e => setNewGoalMin(e.target.value)} className="w-20 md:w-24 p-3 rounded-xl border border-slate-200 font-bold text-sm bg-white text-slate-900 outline-none focus:border-slate-950" />
+                        <button onClick={addGoal} className="flex-1 bg-slate-900 text-white rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-iskra-red active:scale-95 transition-all shadow-lg">
+                            <Plus size={16} /> <span className="hidden xs:inline">Dodaj Gol</span><span className="xs:hidden">Gol</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="p-4 bg-slate-950 rounded-2xl flex items-center gap-3">
+            {/* Miejsce spotkania */}
+            <div className="p-4 bg-slate-950 rounded-2xl flex items-center gap-3 shadow-inner">
                 <MapPin size={18} className="text-iskra-red shrink-0" />
-                <input type="text" value={match.location} onChange={e => setMatch({...match, location: e.target.value})} className="flex-1 bg-transparent border-none font-bold text-xs text-white outline-none" placeholder="Lokalizacja (np. Stadion Zawarcie)"/>
+                <input type="text" value={match.location} onChange={e => setMatch({ ...match, location: e.target.value })} className="flex-1 bg-transparent border-none font-bold text-xs text-white outline-none placeholder:text-slate-600" placeholder="Lokalizacja (np. Stadion Zawarcie)" />
             </div>
 
-            <button onClick={() => handleSaveOrUpdate(match)} className="w-full bg-slate-900 text-white font-[1000] uppercase italic py-4 rounded-[20px] shadow-xl hover:bg-iskra-red transition-all flex items-center justify-center gap-3">
-                <Save size={20}/> Zapisz Dane Meczowe
+            <button onClick={() => save(match)} className="w-full bg-slate-900 text-white font-[1000] uppercase italic py-4 md:py-5 rounded-[20px] md:rounded-[24px] shadow-xl hover:bg-iskra-red active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                <Save size={20} /> Aktualizuj mecz live
             </button>
         </div>
     );
