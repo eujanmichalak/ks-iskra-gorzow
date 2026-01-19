@@ -2,35 +2,44 @@
 import React, { useState, useEffect } from 'react';
 import { History, ChevronRight, Trophy, MapPin } from 'lucide-react';
 import Link from 'next/link';
-
-interface PastMatch {
-    id: string;
-    home: string;
-    away: string;
-    sH: number; 
-    sA: number; 
-    location?: string;
-    date?: string;
-}
+import { supabase } from '@/lib/supabase'; // Import klienta
 
 export const LastMatchesWidget = () => {
-    const [matches, setMatches] = useState<PastMatch[]>([]);
+    const [matches, setMatches] = useState<any[]>([]);
 
     useEffect(() => {
-        const sync = () => {
-            const saved = localStorage.getItem('iskra_history');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                setMatches(parsed.slice(0, 3));
+        const fetchHistory = async () => {
+            const { data } = await supabase
+                .from('match_history')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(3);
+            
+            if (data) {
+                // Mapujemy nazwy z bazy na Twoje sH/sA, żeby design nie padł
+                const mappedMatches = data.map(m => ({
+                    id: m.id,
+                    home: m.home,
+                    away: m.away,
+                    sH: m.score_home,
+                    sA: m.score_away,
+                    location: m.location,
+                    date: m.match_date
+                }));
+                setMatches(mappedMatches);
             }
         };
-        sync();
-        window.addEventListener('storage', sync);
-        window.addEventListener('iskra_data_update', sync); // Dodatkowe odświeżanie
-        return () => {
-            window.removeEventListener('storage', sync);
-            window.removeEventListener('iskra_data_update', sync);
-        };
+
+        fetchHistory();
+        
+        // Opcjonalnie: Realtime, żeby widget odświeżył się od razu po zakończeniu meczu w adminie
+        const channel = supabase.channel('history-widget')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_history' }, () => {
+                fetchHistory();
+            })
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
     }, []);
 
     return (
@@ -52,25 +61,21 @@ export const LastMatchesWidget = () => {
                     matches.map((m) => (
                         <div key={m.id} className="group bg-slate-50 p-4 md:p-5 rounded-[24px] md:rounded-[28px] border border-slate-100 hover:border-iskra-red transition-all shadow-sm">
                             <div className="flex items-center justify-between gap-1 md:gap-2">
-                                {/* Gospodarz */}
                                 <span className="text-[9px] md:text-[10px] font-[1000] uppercase text-slate-900 truncate flex-1 text-right italic leading-tight">
                                     {m.home}
                                 </span>
 
-                                {/* Wynik */}
                                 <div className="bg-white px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg md:rounded-xl border border-slate-200 shadow-sm flex gap-1.5 md:gap-2 group-hover:bg-slate-900 group-hover:text-white transition-colors shrink-0 mx-1">
                                     <span className="font-black text-xs md:text-sm tabular-nums">{m.sH}</span>
                                     <span className="text-slate-300 font-black text-xs md:text-sm">:</span>
                                     <span className="font-black text-xs md:text-sm tabular-nums">{m.sA}</span>
                                 </div>
 
-                                {/* Gość */}
                                 <span className="text-[9px] md:text-[10px] font-[1000] uppercase text-slate-900 truncate flex-1 text-left italic leading-tight">
                                     {m.away}
                                 </span>
                             </div>
 
-                            {/* Lokalizacja i Data */}
                             <div className="mt-3 pt-3 border-t border-slate-200/50 flex flex-wrap items-center justify-between gap-y-1 text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
                                 <div className="flex items-center gap-1 min-w-0">
                                     <MapPin size={10} className="text-iskra-red shrink-0" />
