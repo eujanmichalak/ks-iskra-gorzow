@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, X, Clock, User, Tag, FileText } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface Article {
     id: string;
@@ -17,37 +18,35 @@ export const ClubNews = () => {
     const [newsList, setNewsList] = useState<Article[]>([]);
     const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
     const [isAllNewsOpen, setIsAllNewsOpen] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const fetchArticles = async () => {
+        const { data, error } = await supabase
+            .from('articles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            setAllArticles(data);
+            setNewsList(data.slice(0, 3));
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        setMounted(true);
-        const loadNews = () => {
-            const saved = localStorage.getItem('iskra_articles');
-            if (saved) {
-                try {
-                    const parsed: Article[] = JSON.parse(saved);
-                    const sanitized = parsed.map(a => ({
-                        ...a,
-                        image: a.image && a.image.trim() !== "" ? a.image : null
-                    }));
-                    setAllArticles(sanitized);
-                    setNewsList(sanitized.slice(0, 3));
-                } catch (e) {
-                    console.error("Błąd parsowania", e);
-                }
-            }
-        };
+        fetchArticles();
 
-        loadNews();
-        window.addEventListener('storage', loadNews);
-        window.addEventListener('iskra_data_update', loadNews);
-        return () => {
-            window.removeEventListener('storage', loadNews);
-            window.removeEventListener('iskra_data_update', loadNews);
-        };
+        const channel = supabase
+            .channel('news_updates')
+            .on('postgres_changes', { event: '*', table: 'articles', schema: 'public' }, () => {
+                fetchArticles();
+            })
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
     }, []);
 
-    if (!mounted) return null;
+    if (loading) return null;
 
     return (
         <section id="news" className="py-16 md:py-24 bg-white text-slate-900">
@@ -110,9 +109,7 @@ export const ClubNews = () => {
             {selectedArticle && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center">
                     <div className="absolute inset-0 bg-slate-950/98 md:backdrop-blur-xl" onClick={() => setSelectedArticle(null)}></div>
-                    
                     <div className="relative bg-white w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] md:rounded-[50px] shadow-2xl overflow-hidden flex flex-col">
-                        
                         <button onClick={() => setSelectedArticle(null)} className="absolute top-6 right-6 md:top-8 md:right-8 z-50 p-3 md:p-4 bg-slate-950 text-white rounded-xl md:rounded-2xl hover:bg-iskra-red transition-all active:scale-95 shadow-xl">
                             <X className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
                         </button>
