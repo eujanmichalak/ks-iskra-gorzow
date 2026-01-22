@@ -6,6 +6,7 @@ import { LastMatchesWidget } from '@/components/admin/LastMatchesWidget';
 import { PlayerManager } from '@/components/admin/PlayerManager';
 import { ArticleManager } from '@/components/admin/ArticleManager';
 import { LeagueTableEditor } from '@/components/admin/LeagueTableEditor';
+import { StatsEditor } from '@/components/admin/StatsEditor';
 
 
 export default function Dashboard() {
@@ -19,6 +20,7 @@ export default function Dashboard() {
         <LiveMatchEditor/>
         <LastMatchesWidget/>
         <LeagueTableEditor/>
+        <StatsEditor/>
         <PlayerManager/>
         <ArticleManager/>
 
