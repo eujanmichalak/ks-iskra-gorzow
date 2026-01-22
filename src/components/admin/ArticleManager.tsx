@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, FileText, Upload, User, Tag, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, FileText, Upload, User, Tag, Image as ImageIcon, AlignLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface Article {
@@ -16,7 +16,7 @@ interface Article {
 export const ArticleManager = () => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
-
+    
     const [newArticle, setNewArticle] = useState({
         title: '', author: '', category: 'klub', description: '', image: ''
     });
@@ -26,7 +26,7 @@ export const ArticleManager = () => {
             .from('articles')
             .select('*')
             .order('created_at', { ascending: false });
-
+        
         if (!error && data) setArticles(data);
     };
 
@@ -71,36 +71,40 @@ export const ArticleManager = () => {
     };
 
     return (
-        <div className="space-y-6 md:space-y-8">
-            {/* SEKCJA 1: NOWY ARTYKUŁ - PEŁNY FORMULARZ */}
-            <div className="bg-white rounded-[32px] md:rounded-[40px] p-5 md:p-8 shadow-2xl border border-slate-100 text-slate-900">
+        <div className="space-y-6 md:space-y-8 text-slate-900">
+            {/* SEKCJA 1: NOWY ARTYKUŁ */}
+            <div className="bg-white rounded-[32px] md:rounded-[40px] p-5 md:p-8 shadow-2xl border border-slate-100">
                 <div className="flex items-center gap-3 mb-6 md:mb-8">
                     <div className="p-2.5 md:p-3 bg-slate-950 rounded-xl md:rounded-2xl text-white shadow-lg shrink-0">
                         <FileText size={20} />
                     </div>
-                    <h3 className="text-xl md:text-2xl font-[1000] uppercase italic tracking-tighter">Nowy Artykuł</h3>
+                    <h3 className="text-xl md:text-2xl font-[1000] uppercase italic tracking-tighter text-slate-950">Nowy Artykuł</h3>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                    {/* LEWA KOLUMNA: DANE I FOTO */}
                     <div className="space-y-4">
                         <div>
                             <label className="text-[10px] font-black uppercase text-slate-400 ml-2 mb-1 block">Tytuł Artykułu</label>
-                            <input type="text" value={newArticle.title} onChange={e => setNewArticle({ ...newArticle, title: e.target.value })} className="w-full p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all text-sm md:text-base" placeholder="Np. Wielkie zwycięstwo Iskry!" />
+                            <div className="relative flex items-center">
+                                <FileText size={16} className="absolute left-4 text-slate-400 z-10"/>
+                                <input type="text" value={newArticle.title} onChange={e => setNewArticle({...newArticle, title: e.target.value})} className="w-full p-3 md:p-4 pl-12 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all text-sm md:text-base" placeholder="Np. Wielkie zwycięstwo Iskry!"/>
+                            </div>
                         </div>
-
+                        
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="text-[10px] font-black uppercase text-slate-400 ml-2 mb-1 block">Autor</label>
-                                <div className="relative">
-                                    <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                                    <input type="text" value={newArticle.author} onChange={e => setNewArticle({ ...newArticle, author: e.target.value })} className="w-full p-3 md:p-4 pl-12 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all text-sm" placeholder="Imię Nazwisko" />
+                                <div className="relative flex items-center">
+                                    <User size={16} className="absolute left-4 text-slate-400 z-10"/>
+                                    <input type="text" value={newArticle.author} onChange={e => setNewArticle({...newArticle, author: e.target.value})} className="w-full p-3 md:p-4 pl-12 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all text-sm" placeholder="Imię Nazwisko"/>
                                 </div>
                             </div>
                             <div>
                                 <label className="text-[10px] font-black uppercase text-slate-400 ml-2 mb-1 block">Kategoria</label>
-                                <div className="relative">
-                                    <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                                    <select value={newArticle.category} onChange={e => setNewArticle({ ...newArticle, category: e.target.value })} className="w-full p-3 md:p-4 pl-12 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all text-sm appearance-none uppercase tracking-tighter bg-white">
+                                <div className="relative flex items-center">
+                                    <Tag size={16} className="absolute left-4 text-slate-400 z-10 pointer-events-none"/>
+                                    <select value={newArticle.category} onChange={e => setNewArticle({...newArticle, category: e.target.value})} className="w-full p-3 md:p-4 pl-12 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all text-sm appearance-none uppercase tracking-tighter bg-white">
                                         <option value="inne">Inne</option>
                                         <option value="mecz">Mecz</option>
                                         <option value="klub">Klub</option>
@@ -112,7 +116,7 @@ export const ArticleManager = () => {
 
                         <div>
                             <label className="text-[10px] font-black uppercase text-slate-400 ml-2 mb-1 block">Zdjęcie wyróżniające</label>
-                            <label className="flex items-center justify-center gap-3 p-6 md:p-8 border-2 border-dashed border-slate-200 rounded-xl md:rounded-2xl cursor-pointer hover:border-slate-950 transition-all bg-slate-50 overflow-hidden relative min-h-[120px]">
+                            <label className="flex items-center justify-center gap-3 p-6 md:p-8 border-2 border-dashed border-slate-200 rounded-xl md:rounded-2xl cursor-pointer hover:border-slate-950 transition-all bg-slate-50 overflow-hidden relative min-h-[140px]">
                                 {newArticle.image ? (
                                     <img src={newArticle.image} className="absolute inset-0 w-full h-full object-cover opacity-20" alt="Preview" />
                                 ) : null}
@@ -125,27 +129,31 @@ export const ArticleManager = () => {
                         </div>
                     </div>
 
+                    {/* PRAWA KOLUMNA: TREŚĆ */}
                     <div className="space-y-4 flex flex-col">
                         <div className="flex-1">
                             <label className="text-[10px] font-black uppercase text-slate-400 ml-2 mb-1 block">Treść / Opis</label>
-                            <textarea rows={6} value={newArticle.description} onChange={e => setNewArticle({ ...newArticle, description: e.target.value })} className="w-full h-full min-h-[150px] p-3 md:p-4 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all resize-none text-sm" placeholder="O czym chcesz napisać..."></textarea>
+                            <div className="relative h-full min-h-[180px]">
+                                <AlignLeft size={16} className="absolute left-4 top-4 text-slate-400 z-10 pointer-events-none"/>
+                                <textarea rows={8} value={newArticle.description} onChange={e => setNewArticle({...newArticle, description: e.target.value})} className="w-full h-full p-3 md:p-4 pl-12 rounded-xl md:rounded-2xl border-2 border-slate-100 font-bold focus:border-slate-900 outline-none transition-all resize-none text-sm" placeholder="O czym chcesz napisać..."></textarea>
+                            </div>
                         </div>
 
-                        <button
-                            onClick={addArticle}
+                        <button 
+                            onClick={addArticle} 
                             disabled={loading}
                             className="w-full mt-4 bg-slate-950 text-white py-4 md:py-5 rounded-xl md:rounded-[24px] font-[1000] uppercase italic tracking-widest hover:bg-slate-900 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
                         >
-                            {loading ? "Publikowanie..." : <><Plus size={20} strokeWidth={3} /> <span className="text-sm md:text-base">Opublikuj artykuł</span></>}
+                            {loading ? "Publikowanie..." : <><Plus size={20} strokeWidth={3}/> <span className="text-sm md:text-base">Opublikuj artykuł</span></>}
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* SEKCJA 2: LISTA ARTYKUŁÓW - WSZYSTKIE ELEMENTY */}
-            <div className="bg-white rounded-[32px] md:rounded-[40px] p-5 md:p-8 shadow-2xl border border-slate-100 text-slate-900">
-                <h4 className="text-[10px] md:text-xs font-[1000] uppercase tracking-[0.2em] mb-6 italic">OSTATNIO DODANE</h4>
-
+            {/* SEKCJA 2: LISTA OSTATNIO DODANYCH */}
+            <div className="bg-white rounded-[32px] md:rounded-[40px] p-5 md:p-8 shadow-2xl border border-slate-100">
+                <h4 className="text-[10px] md:text-xs font-[1000] uppercase tracking-[0.2em] mb-6 italic text-slate-400">OSTATNIO DODANE</h4>
+                
                 <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                     {articles.length > 0 ? (
                         articles.map(art => (
@@ -157,15 +165,15 @@ export const ArticleManager = () => {
                                         <div className="w-full h-full flex items-center justify-center text-[8px] font-black text-slate-300">FOTO</div>
                                     )}
                                 </div>
-
-                                <div className="flex-1 min-w-0">
+                                
+                                <div className="flex-1 min-w-0 px-2">
                                     <div className="flex flex-wrap items-center gap-2 mb-1">
                                         <span className="bg-slate-950 text-white text-[8px] md:text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest shrink-0">
                                             {art.category}
                                         </span>
                                         <span className="text-[9px] md:text-[10px] font-black text-slate-400">{art.timestamp}</span>
                                     </div>
-                                    <h5 className="font-[1000] uppercase italic text-sm md:text-base leading-tight mb-1 truncate">{art.title}</h5>
+                                    <h5 className="font-[1000] uppercase italic text-sm md:text-base leading-tight mb-1 truncate text-slate-950">{art.title}</h5>
                                     <p className="text-[10px] font-bold text-slate-400 line-clamp-1 uppercase leading-none">{art.description}</p>
                                 </div>
 
