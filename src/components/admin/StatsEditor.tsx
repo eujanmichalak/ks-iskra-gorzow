@@ -27,77 +27,73 @@ export const StatsEditor = () => {
         setLoading(true);
         const { error } = await supabase.from('team_stats').update(stats).eq('id', 1);
         if (!error) {
-            alert('Statystyki zapisane pomyślnie!');
+            alert('ZAPISANO POMYŚLNIE');
         }
         setLoading(false);
     };
 
     const fields = [
-        { id: 'goals_scored', label: 'Gole Strzelone', color: 'text-green-600', border: 'border-green-100' },
-        { id: 'goals_conceded', label: 'Gole Stracone', color: 'text-blue-600', border: 'border-blue-100' },
-        { id: 'yellow_cards', label: 'Żółte Kartki', color: 'text-yellow-600', border: 'border-yellow-100' },
-        { id: 'red_cards', label: 'Czerwone Kartki', color: 'text-red-600', border: 'border-red-100' },
+        { id: 'goals_scored', label: 'GOLE STRZELONE' },
+        { id: 'goals_conceded', label: 'GOLE STRACONE' },
+        { id: 'yellow_cards', label: 'ŻÓŁTE KARTKI' },
+        { id: 'red_cards', label: 'CZERWONE KARTKI' },
     ];
 
-    if (fetching) return (
-        <div className="p-12 text-center text-slate-900 font-black uppercase animate-pulse">
-            Wczytywanie statystyk...
-        </div>
-    );
+    if (fetching) return <div className="p-12 text-center text-black font-black uppercase">ŁADOWANIE...</div>;
 
     return (
-        <div className="bg-white p-6 md:p-8 rounded-[32px] border-2 border-slate-200 shadow-xl">
-            {/* Header - Mocny czarny tekst */}
-            <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 bg-slate-950 rounded-2xl text-white shadow-lg">
-                    <BarChart3 size={24} />
+        <div className="bg-white p-6 md:p-8 rounded-[32px] border-[4px] border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+            {/* Nagłówek - Betonowa czerń */}
+            <div className="flex items-center gap-4 mb-10">
+                <div className="p-4 bg-black rounded-2xl text-white">
+                    <BarChart3 size={32} />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-[1000] uppercase italic tracking-tighter text-slate-950">
-                    Edytor Statystyk
+                <h3 className="text-3xl md:text-4xl font-[1000] uppercase italic tracking-tighter text-black">
+                    EDYTOR STATYSTYK
                 </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {fields.map(f => (
-                    <div key={f.id} className={`p-5 rounded-[24px] bg-slate-50 border-2 ${f.border}`}>
-                        <label className="text-[11px] font-[1000] uppercase text-slate-900 block mb-4 ml-1 tracking-wider">
+                    <div key={f.id} className="p-6 rounded-[24px] border-[3px] border-black bg-white">
+                        <label className="text-sm font-[1000] uppercase text-black block mb-5 tracking-widest">
                             {f.label}
                         </label>
-
-                        <div className="flex items-center justify-between bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-sm">
-                            <button
-                                onClick={() => updateVal(f.id, -1)}
-                                className="p-3 hover:bg-slate-950 hover:text-white rounded-xl transition-all border border-slate-100 text-slate-950 shadow-sm active:scale-90"
+                        
+                        <div className="flex items-center justify-between gap-6">
+                            <button 
+                                onClick={() => updateVal(f.id, -1)} 
+                                className="w-16 h-16 flex items-center justify-center bg-white hover:bg-black hover:text-white rounded-2xl border-[3px] border-black text-black transition-all active:scale-90 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                             >
-                                <Minus size={24} strokeWidth={3} />
+                                <Minus size={32} strokeWidth={4} />
                             </button>
-
-                            <span className={`text-4xl font-[1000] italic tabular-nums ${f.color}`}>
+                            
+                            <span className="text-6xl font-[1000] italic tabular-nums text-black">
                                 {(stats as any)[f.id]}
                             </span>
-
-                            <button
-                                onClick={() => updateVal(f.id, 1)}
-                                className="p-3 hover:bg-slate-950 hover:text-white rounded-xl transition-all border border-slate-100 text-slate-950 shadow-sm active:scale-90"
+                            
+                            <button 
+                                onClick={() => updateVal(f.id, 1)} 
+                                className="w-16 h-16 flex items-center justify-center bg-white hover:bg-black hover:text-white rounded-2xl border-[3px] border-black text-black transition-all active:scale-90 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                             >
-                                <Plus size={24} strokeWidth={3} />
+                                <Plus size={32} strokeWidth={4} />
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <button
-                onClick={handleSave}
+            <button 
+                onClick={handleSave} 
                 disabled={loading}
-                className="w-full mt-8 bg-slate-950 text-white py-5 rounded-[24px] font-[1000] uppercase italic tracking-[0.2em] hover:bg-slate-800 transition-all flex items-center justify-center gap-4 shadow-2xl active:scale-95 disabled:opacity-50"
+                className="w-full mt-12 bg-black text-white py-6 rounded-[28px] font-[1000] uppercase italic text-2xl tracking-[0.1em] hover:bg-slate-800 transition-all flex items-center justify-center gap-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] active:scale-95 disabled:opacity-50"
             >
                 {loading ? (
-                    <RefreshCw className="animate-spin" size={24} />
+                    <RefreshCw className="animate-spin" size={32} />
                 ) : (
                     <>
-                        <Save size={24} strokeWidth={2.5} />
-                        <span className="text-lg">Zapisz statystyki w bazie</span>
+                        <Save size={32} strokeWidth={3} />
+                        ZAPISZ STATYSTYKI
                     </>
                 )}
             </button>
