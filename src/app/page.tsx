@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { TopScorers } from '@/components/TopScorers';
 import { ClubHero } from '@/components/ClubHero';
 import { ClubNews } from '@/components/ClubNews';
+import { LeadManager } from '@/components/admin/LeadManager'; 
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         <TeamStats />
         <TopScorers />
         <LeagueSection />
+        <LeadManager />
       </main>
       <Footer />
     </div>
