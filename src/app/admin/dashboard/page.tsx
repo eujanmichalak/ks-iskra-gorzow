@@ -7,6 +7,7 @@ import { PlayerManager } from '@/components/admin/PlayerManager';
 import { ArticleManager } from '@/components/admin/ArticleManager';
 import { LeagueTableEditor } from '@/components/admin/LeagueTableEditor';
 import { StatsEditor } from '@/components/admin/StatsEditor';
+import { LeadManager } from '@/components/admin/LeadManager';
 
 
 export default function Dashboard() {
@@ -23,6 +24,7 @@ export default function Dashboard() {
         <StatsEditor/>
         <PlayerManager/>
         <ArticleManager/>
+        <LeadManager/>
 
      
 
