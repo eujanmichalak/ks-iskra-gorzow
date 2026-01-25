@@ -9,50 +9,42 @@ export default function HistoryPage() {
         {
             year: '2005',
             title: 'Narodziny Legendy',
-            desc: 'Oficjalne założenie klubu KS Iskra Gorzów na gorzowskim Zawarciu. Początek wielkiej przygody.',
+            desc: 'Oficjalne założenie klubu KS Iskra Gorzów na gorzowskim Zawarciu.',
             img: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop',
             icon: <Star size={20} />
         },
         {
             year: '2008',
             title: 'Pierwszy Awans',
-            desc: 'Historyczny awans do wyższej klasy rozgrywkowej po bezbłędnym sezonie na własnym stadionie.',
+            desc: 'Historyczny awans do wyższej klasy rozgrywkowej po bezbłędnym sezonie.',
             img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=800&auto=format&fit=crop',
             icon: <Trophy size={20} />
         },
         {
             year: '2012',
-            title: 'Modernizacja Strażackiej',
-            desc: 'Remont murawy i zaplecza treningowego przy ul. Strażackiej. Stadion zyskał nowy blask.',
+            title: 'Modernizacja Stadionu',
+            desc: 'Remont murawy i zaplecza treningowego przy ul. Strażackiej.',
             img: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?q=80&w=800&auto=format&fit=crop',
             icon: <Target size={20} />
         },
         {
-            year: '2015',
-            title: '10-lecie Klubu',
-            desc: 'Wielki festyn sportowy i mecz z oldbojami Ekstraklasy na uczczenie dekady istnienia.',
-            img: 'https://images.unsplash.com/photo-1511406361295-0a5ff814c0ad?q=80&w=800&auto=format&fit=crop',
-            icon: <HistoryIcon size={20} />
-        },
-        {
             year: '2018',
             title: 'Powstanie Akademii',
-            desc: 'Uruchomienie oficjalnych struktur szkolenia młodzieży. Pierwsze roczniki Skrzatów i Żaków.',
+            desc: 'Uruchomienie oficjalnych struktur szkolenia młodzieży.',
             img: 'https://images.unsplash.com/photo-1526232761682-d26e4f9c8816?q=80&w=800&auto=format&fit=crop',
             icon: <Users size={20} />
         }
     ];
 
     return (
-        <main className="bg-white min-h-screen">
+        <main className="bg-white min-h-screen text-slate-900">
             <Navbar />
 
-            <section className="pt-32 pb-16 bg-slate-900 text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-iskra-red opacity-5 transform -skew-y-6 translate-y-20"></div>
+            <section className="pt-32 pb-16 bg-slate-950 text-center relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 relative z-10">
-                    <span className="text-iskra-red font-black text-xs uppercase tracking-[0.5em] mb-4 block underline decoration-2 underline-offset-8">Od 2005 Roku</span>
+                    <span className="text-white opacity-40 font-black text-xs uppercase tracking-[0.5em] mb-4 block underline decoration-2 underline-offset-8">Od 2005 Roku</span>
                     <h1 className="text-5xl md:text-8xl font-[1000] text-white uppercase italic tracking-tighter leading-none">
-                        Historia <span className="text-iskra-red">Iskry</span>
+                        Historia <span className="bg-white text-slate-950 px-4">Iskry</span>
                     </h1>
                 </div>
             </section>
@@ -68,12 +60,12 @@ export default function HistoryPage() {
                                 <div key={index} className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-16`}>
                                     <div className="w-full md:w-1/2">
                                         <div className="relative group">
-                                            <div className="absolute -inset-2 bg-slate-100 rounded-[30px] rotate-2 group-hover:rotate-0 transition-transform duration-500"></div>
-                                            <div className="relative h-64 md:h-80 w-full overflow-hidden rounded-[24px] shadow-xl border-4 border-white">
-                                                <img src={event.img} alt={event.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100" />
-                                                <div className="absolute inset-0 bg-gradient-t from-slate-900/60 to-transparent"></div>
+                                            <div className="absolute -inset-2 bg-slate-950 rounded-[30px] rotate-1 transition-transform duration-500 group-hover:rotate-0"></div>
+                                            <div className="relative h-64 md:h-80 w-full overflow-hidden rounded-[24px] shadow-xl border-4 border-white bg-slate-200">
+                                                <img src={event.img} alt={event.title} className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-105" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
                                                 <div className="absolute bottom-6 left-6">
-                                                    <span className="bg-iskra-red text-white px-4 py-1 rounded-full font-black italic text-xl shadow-lg">
+                                                    <span className="bg-white text-slate-950 px-6 py-2 font-black italic text-2xl shadow-2xl">
                                                         {event.year}
                                                     </span>
                                                 </div>
@@ -81,20 +73,17 @@ export default function HistoryPage() {
                                         </div>
                                     </div>
 
-                                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-12 h-12 bg-slate-900 border-4 border-white rounded-full items-center justify-center text-iskra-red shadow-xl z-20">
+                                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-14 h-14 bg-white border-4 border-slate-950 rounded-full items-center justify-center text-slate-950 shadow-2xl z-20">
                                         {event.icon}
                                     </div>
 
                                     <div className={`w-full md:w-1/2 ${isEven ? 'text-left' : 'md:text-right'} space-y-4`}>
-                                        <h3 className="text-3xl md:text-4xl font-[1000] uppercase italic tracking-tighter text-slate-900 leading-none">
+                                        <h3 className="text-3xl md:text-5xl font-[1000] uppercase italic tracking-tighter text-slate-950 leading-none">
                                             {event.title}
                                         </h3>
                                         <p className={`text-slate-500 font-medium leading-relaxed max-w-md ${!isEven ? 'md:ml-auto' : ''}`}>
                                             {event.desc}
                                         </p>
-                                        <div className={`flex ${isEven ? 'justify-start' : 'md:justify-end'}`}>
-                                            <div className="h-1 w-12 bg-iskra-red/20 rounded-full"></div>
-                                        </div>
                                     </div>
                                 </div>
                             );
