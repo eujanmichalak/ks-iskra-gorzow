@@ -15,7 +15,7 @@ export const LiveHero = () => {
         if (data) setMatch(data);
     };
 
-    // Logika obliczania minuty na żywo
+    // Logika obliczania minuty
     useEffect(() => {
         if (match?.status === 'live' && match?.start_time) {
             const calculate = () => {
@@ -27,8 +27,8 @@ export const LiveHero = () => {
             calculate();
             const interval = setInterval(calculate, 10000);
             return () => clearInterval(interval);
-        } else {
-            setDisplayMinute(match?.minute || 0);
+        } else if (match) {
+            setDisplayMinute(match.minute || 0);
         }
     }, [match]);
 
@@ -52,7 +52,7 @@ export const LiveHero = () => {
                 <div className="text-center mb-8 md:mb-10">
                     <span className="text-slate-900 font-black text-[10px] md:text-xs uppercase tracking-[0.4em] mb-3 block">Centrum Meczowe</span>
                     <h1 className="text-3xl md:text-6xl font-[1000] text-slate-900 uppercase italic tracking-tighter leading-none">
-                        Śledź nasz mecz <span className="text-red-600">na żywo</span>
+                        Śledź nasz mecz <span className="text-iskra-red">na żywo</span>
                     </h1>
                 </div>
 
@@ -115,7 +115,7 @@ export const LiveHero = () => {
                     </div>
 
                     <div className="bg-white py-4 px-6 md:px-10 border-t border-slate-100 flex justify-center items-center gap-3 md:gap-4">
-                        <MapPin size={10} className="text-red-600 shrink-0" />
+                        <MapPin size={10} className="text-iskra-red shrink-0" />
                         <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">
                             {match.location || 'Stadion Zawarcie'}
                         </span>

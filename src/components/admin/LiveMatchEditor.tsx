@@ -25,21 +25,24 @@ export const LiveMatchEditor = () => {
         if (!error) setMatch((prev: any) => ({ ...prev, ...updatedData }));
     };
 
-    // FUNKCJA STARTU - Zapisuje czas rzeczywisty rozpoczęcia
     const handleStart = async () => {
+        if (!match) return; // Zabezpieczenie przed błędem null
+        
         const now = new Date().toISOString();
-        // Jeśli startujemy od 46 minuty, cofamy start_time o 45 min, żeby obliczenia się zgadzały
         let startTime = now;
-        if (match.minute >= 45) {
+        
+        // Jeśli startujemy np. od 46 minuty, cofamy start_time, żeby obliczenia były poprawne
+        if (match.minute && match.minute > 0) {
             const date = new Date();
-            date.setMinutes(date.getMinutes() - match.minute);
+            date.setMinutes(date.getMinutes() - (parseInt(match.minute) || 0));
             startTime = date.toISOString();
         }
+        
         await saveToDB({ status: 'live', start_time: startTime });
     };
 
     const handleStop = async () => {
-        if (!confirm("Zakończyć mecz? Wynik zostanie zapisany w historii i sekcji ligowej.")) return;
+        if (!match || !confirm("Zakończyć mecz? Wynik zostanie zapisany w historii i sekcji ligowej.")) return;
 
         await supabase.from('match_history').insert([{
             home: match.home,
@@ -63,7 +66,7 @@ export const LiveMatchEditor = () => {
     };
 
     const addGoal = async () => {
-        if (!newGoalPlayer) return;
+        if (!newGoalPlayer || !match) return;
         const goalMin = Number(newGoalMin) || match.minute;
         const newEvent = { team: newGoalTeam, min: goalMin, player: newGoalPlayer };
 
@@ -101,7 +104,7 @@ export const LiveMatchEditor = () => {
                     <div className="flex items-center gap-2 md:gap-4 justify-center py-2 md:py-4 text-slate-900">
                         <input type="number" value={match.score_home} onChange={e => setMatch({ ...match, score_home: parseInt(e.target.value) || 0 })} className="w-16 md:w-20 text-center text-3xl font-black p-2 rounded-2xl bg-white border border-slate-200 outline-none" />
                         <div className="flex flex-col items-center bg-white px-3 py-2 rounded-2xl border border-slate-200 shadow-sm min-w-[60px]">
-                            <Clock size={14} className="text-red-600 mb-1" />
+                            <Clock size={14} className="text-iskra-red mb-1" />
                             <div className="flex items-center">
                                 <input type="number" value={match.minute} onChange={e => setMatch({ ...match, minute: parseInt(e.target.value) || 0 })} className="w-8 text-center font-black text-sm outline-none bg-transparent" />
                                 <span className="text-[10px] font-bold text-slate-400">'</span>
@@ -114,7 +117,7 @@ export const LiveMatchEditor = () => {
                 <div className="space-y-4 bg-slate-50 p-4 md:p-6 rounded-[28px] border border-slate-100">
                     <div className="flex justify-between items-center">
                         <h4 className="font-black uppercase text-[10px] text-slate-400">Strzelcy bramek</h4>
-                        <span className="text-[9px] font-black text-red-600 uppercase bg-white px-2 py-1 rounded-lg border">Dla: {newGoalTeam === 'home' ? match.home : match.away}</span>
+                        <span className="text-[9px] font-black text-iskra-red uppercase bg-white px-2 py-1 rounded-lg border">Dla: {newGoalTeam === 'home' ? match.home : match.away}</span>
                     </div>
                     <div className="flex gap-2">
                         <button onClick={() => setNewGoalTeam('home')} className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase border transition-all ${newGoalTeam === 'home' ? 'bg-slate-900 text-white' : 'bg-white text-slate-400'}`}>{match.home}</button>
@@ -123,17 +126,17 @@ export const LiveMatchEditor = () => {
                     <input type="text" placeholder="Nazwisko strzelca" value={newGoalPlayer} onChange={e => setNewGoalPlayer(e.target.value)} className="w-full p-3 rounded-xl border border-slate-200 font-bold text-sm bg-white outline-none" />
                     <div className="flex gap-2">
                         <input type="number" placeholder="Min" value={newGoalMin} onChange={e => setNewGoalMin(e.target.value)} className="w-20 p-3 rounded-xl border border-slate-200 font-bold text-sm bg-white outline-none" />
-                        <button onClick={addGoal} className="flex-1 bg-slate-900 text-white rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-red-600 transition-all shadow-lg"><Plus size={16} /> Dodaj Gol</button>
+                        <button onClick={addGoal} className="flex-1 bg-slate-900 text-white rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-iskra-red transition-all shadow-lg"><Plus size={16} /> Dodaj Gol</button>
                     </div>
                 </div>
             </div>
 
             <div className="p-4 bg-slate-950 rounded-2xl flex items-center gap-3 shadow-inner">
-                <MapPin size={18} className="text-red-600 shrink-0" />
+                <MapPin size={18} className="text-iskra-red shrink-0" />
                 <input type="text" value={match.location} onChange={e => setMatch({ ...match, location: e.target.value })} className="flex-1 bg-transparent border-none font-bold text-xs text-white outline-none" placeholder="Lokalizacja" />
             </div>
 
-            <button onClick={() => saveToDB(match)} className="w-full bg-slate-900 text-white font-[1000] uppercase italic py-4 rounded-[20px] shadow-xl hover:bg-red-600 transition-all flex items-center justify-center gap-3">
+            <button onClick={() => saveToDB(match)} className="w-full bg-slate-900 text-white font-[1000] uppercase italic py-4 rounded-[20px] shadow-xl hover:bg-iskra-red transition-all flex items-center justify-center gap-3">
                 <Save size={20} /> Aktualizuj mecz live
             </button>
         </div>
