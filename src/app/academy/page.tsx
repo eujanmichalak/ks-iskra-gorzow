@@ -13,80 +13,68 @@ export default function AkademiaPage() {
     ];
 
     return (
-        <main className="bg-white min-h-screen text-slate-900">
+        <div className="min-h-screen bg-white text-slate-950 font-sans overflow-x-hidden">
             <Navbar />
-            
-            {/* Nagłówek w stylu strony głównej */}
-            <section className="pt-32 pb-16 bg-white border-b border-slate-100">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.4em] mb-4 block">Szkolenie Młodzieży</span>
-                    <h1 className="text-4xl md:text-6xl font-[1000] text-slate-900 uppercase italic tracking-tighter leading-none mb-6">
-                        Akademia Piłkarska
-                    </h1>
-                    <p className="text-slate-500 max-w-2xl mx-auto font-medium text-sm md:text-base">
-                        Budujemy sportowe fundamenty na gorzowskim Zawarciu. Dołącz do drużyny Iskry.
-                    </p>
+
+            {/* HERO SECTION - Styl jak w Nasza Kadra */}
+            <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden bg-slate-950">
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-white z-10" />
+                    <img src="https://images.unsplash.com/photo-1526232761682-d26e4f9c8816?q=80&w=2000" className="w-full h-full object-cover" alt="Trening" />
+                </div>
+                <div className="relative z-20 text-center px-6 italic font-[1000]">
+                    <h1 className="text-[15vw] md:text-[9rem] text-white/90 leading-[0.7] tracking-tighter uppercase">MŁODA</h1>
+                    <h1 className="text-[15vw] md:text-[9rem] text-iskra-red leading-[0.7] tracking-tighter uppercase mt-2">ISKRA</h1>
                 </div>
             </section>
 
-            {/* Grupy treningowe - Czyste karty */}
-            <section className="py-20 max-w-7xl mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
+                {/* Grupy Treningowe */}
+                <div className="flex items-center gap-4 mb-12 border-l-[8px] border-iskra-red pl-4 md:pl-6">
+                    <h2 className="text-3xl md:text-5xl font-[1000] uppercase italic tracking-tighter leading-none">GRUPY NABOROWE</h2>
+                    <div className="bg-slate-50 p-2 rounded-lg"><Star size={24} className="text-iskra-red" fill="currentColor" /></div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
                     {groups.map((g, i) => (
-                        <div key={i} className="p-8 rounded-[32px] bg-slate-50 border border-slate-100 hover:shadow-xl hover:bg-white transition-all duration-300">
-                            <span className="text-slate-400 font-black text-[10px] uppercase block mb-2">{g.age}</span>
-                            <h3 className="text-2xl font-[1000] uppercase italic text-slate-900 mb-6">{g.name}</h3>
-                            <div className="space-y-3 pt-4 border-t border-slate-200">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Dni</span>
-                                    <span className="text-xs font-bold">{g.days}</span>
+                        <div key={i} className="group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:border-iskra-red transition-all duration-500 p-8">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-iskra-red">{g.age}</span>
+                            <h3 className="text-3xl font-[1000] uppercase italic tracking-tighter text-slate-950 mt-2 mb-6 group-hover:text-iskra-red transition-colors">{g.name}</h3>
+                            <div className="space-y-3 pt-6 border-t border-slate-50">
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black uppercase text-slate-400">Terminy</span>
+                                    <span className="text-sm font-bold uppercase italic">{g.days}</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Godzina</span>
-                                    <span className="text-xs font-bold">{g.time}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black uppercase text-slate-400">Godzina</span>
+                                    <span className="text-sm font-bold uppercase italic">{g.time}</span>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            </section>
 
-            {/* Informacje - Ikony w kółkach */}
-            <section className="py-20 bg-slate-50 border-y border-slate-100">
-                <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                    {[
-                        { icon: <Shield size={24} />, title: "Certyfikacja", desc: "Zajęcia prowadzone przez wykwalifikowanych trenerów." },
-                        { icon: <Target size={24} />, title: "Rozwój", desc: "Indywidualne podejście do każdego młodego zawodnika." },
-                        { icon: <Trophy size={24} />, title: "Turnieje", desc: "Udział w rozgrywkach ligowych i turniejach ogólnopolskich." }
-                    ].map((item, i) => (
-                        <div key={i} className="flex flex-col items-center">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-6 border border-slate-200">
-                                {item.icon}
-                            </div>
-                            <h4 className="font-[1000] uppercase italic text-lg mb-2">{item.title}</h4>
-                            <p className="text-slate-500 text-sm font-medium">{item.desc}</p>
-                        </div>
-                    ))}
+                {/* CTA BOX */}
+                <div className="relative bg-slate-950 rounded-[40px] p-8 md:p-16 overflow-hidden">
+                    <div className="absolute right-0 top-0 opacity-10 translate-x-1/4 -translate-y-1/4">
+                        <Trophy size={400} className="text-white" />
+                    </div>
+                    <div className="relative z-10 max-w-2xl">
+                        <h2 className="text-4xl md:text-6xl font-[1000] text-white uppercase italic tracking-tighter leading-none mb-6">
+                            PIERWSZY TRENING <span className="text-iskra-red">GRATIS</span>
+                        </h2>
+                        <p className="text-slate-400 font-medium text-lg mb-8">Nie czekaj, aż talent sam się odkryje. Przyprowadź dziecko na trening i poczuj atmosferę Iskry Gorzów.</p>
+                        <button 
+                            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="bg-iskra-red text-white font-[1000] uppercase italic px-10 py-5 rounded-2xl hover:scale-105 transition-all shadow-xl flex items-center gap-3"
+                        >
+                            ZAPISZ DZIECKO TERAZ <ArrowRight size={24} />
+                        </button>
+                    </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Zapisy - Prosty boks */}
-            <section className="py-24 max-w-4xl mx-auto px-4 text-center">
-                <div className="bg-white border border-slate-200 rounded-[40px] p-10 md:p-16 shadow-sm">
-                    <h2 className="text-3xl md:text-4xl font-[1000] uppercase italic tracking-tighter mb-6">Pierwszy Trening Bezpłatny</h2>
-                    <p className="text-slate-500 font-medium mb-10 max-w-md mx-auto text-sm">
-                        Chcesz sprawdzić czy piłka nożna jest dla Twojego dziecka? Zapraszamy na niezobowiązujący trening próbny.
-                    </p>
-                    <button 
-                        onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-                        className="bg-slate-900 text-white font-black uppercase italic px-10 py-4 rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-2 mx-auto"
-                    >
-                        Zapisz się teraz <ArrowRight size={18} />
-                    </button>
-                </div>
-            </section>
-            
             <Footer />
-        </main>
+        </div>
     );
 }
