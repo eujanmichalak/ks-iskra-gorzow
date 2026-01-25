@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 
 export const LiveHero = () => {
     const [match, setMatch] = useState<any>(null);
+    const [displayMinute, setDisplayMinute] = useState(0);
+
     const logoIskra = "https://scontent.fktw6-1.fna.fbcdn.net/v/t39.30808-6/420048755_876503211141570_1870842103319874308_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=hNIB1eW4zzsQ7kNvwETleDi&_nc_oc=AdlIgngstdCsYf_ofPw4u9AkfV7S4xG-uBse7NWdBgunz7a_5SOEvrTzj5n2OFlq90o5HqkTZWj4VftL-c83ugOm&_nc_zt=23&_nc_ht=scontent.fktw6-1.fna&_nc_gid=1DC7xf588E0vuiD8D3E0zg&oh=00_Afr6Uzkm7v7uH64oAP5o-OPnlcZ4B1Nn1shwq5QxebUXmQ&oe=69676F0F";
     const logoPlaceholder = "https://via.placeholder.com/150/f1f5f9/94a3b8?text=FC";
 
@@ -13,22 +15,35 @@ export const LiveHero = () => {
         if (data) setMatch(data);
     };
 
+    // Logika obliczania minuty na żywo
+    useEffect(() => {
+        if (match?.status === 'live' && match?.start_time) {
+            const calculate = () => {
+                const start = new Date(match.start_time).getTime();
+                const now = new Date().getTime();
+                const diff = Math.floor((now - start) / 60000) + 1;
+                setDisplayMinute(diff > 95 ? 95 : diff);
+            };
+            calculate();
+            const interval = setInterval(calculate, 10000);
+            return () => clearInterval(interval);
+        } else {
+            setDisplayMinute(match?.minute || 0);
+        }
+    }, [match]);
+
     useEffect(() => {
         fetchMatch();
-
-        // REALTIME: Słuchaj zmian w bazie danych
         const channel = supabase
             .channel('live-updates')
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_match' }, (payload) => {
                 setMatch(payload.new);
             })
             .subscribe();
-
         return () => { supabase.removeChannel(channel); };
     }, []);
 
     if (!match) return null;
-
     const getLogo = (teamName: string) => teamName?.toLowerCase().includes('iskra') ? logoIskra : logoPlaceholder;
 
     return (
@@ -37,7 +52,7 @@ export const LiveHero = () => {
                 <div className="text-center mb-8 md:mb-10">
                     <span className="text-slate-900 font-black text-[10px] md:text-xs uppercase tracking-[0.4em] mb-3 block">Centrum Meczowe</span>
                     <h1 className="text-3xl md:text-6xl font-[1000] text-slate-900 uppercase italic tracking-tighter leading-none">
-                        Śledź nasz mecz <span className="text-iskra-red">na żywo</span>
+                        Śledź nasz mecz <span className="text-red-600">na żywo</span>
                     </h1>
                 </div>
 
@@ -46,7 +61,7 @@ export const LiveHero = () => {
                         <div className={`px-4 py-1 rounded-full flex items-center gap-2 ${match.status === 'live' ? 'bg-red-600 animate-pulse' : 'bg-slate-400'}`}>
                             <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                             <span className="text-[10px] text-white font-[1000] uppercase tracking-widest">
-                                {match.status === 'live' ? `Live ${match.minute}'` : match.status === 'break' ? 'Przerwa' : 'Mecz zakończony'}
+                                {match.status === 'live' ? `Live ${displayMinute}'` : match.status === 'break' ? 'Przerwa' : 'Mecz zakończony'}
                             </span>
                         </div>
                     </div>
@@ -100,7 +115,7 @@ export const LiveHero = () => {
                     </div>
 
                     <div className="bg-white py-4 px-6 md:px-10 border-t border-slate-100 flex justify-center items-center gap-3 md:gap-4">
-                        <MapPin size={10} className="text-iskra-red shrink-0" />
+                        <MapPin size={10} className="text-red-600 shrink-0" />
                         <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">
                             {match.location || 'Stadion Zawarcie'}
                         </span>
