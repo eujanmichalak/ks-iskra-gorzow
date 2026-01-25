@@ -18,8 +18,8 @@ export const Navbar = () => {
     const navLinks = [
         { name: 'Strona Główna', href: '/' },
         { name: 'Zespół', href: '/players_page' },
-        { name: 'Akademia', href: '#' },
-        { name: 'Historia', href: '#' },
+        { name: 'Akademia', href: '/academy' },
+        { name: 'Historia', href: '/history' },
     ];
 
     return (
