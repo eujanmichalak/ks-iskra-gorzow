@@ -38,10 +38,11 @@ export const Footer = () => {
                         Sponsorzy i Partnerzy Klubu
                     </p>
                     <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
-                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">GORZÓW.PL</span>
-                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">BUD-MIX</span>
-                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">HURTOWNIA ISKRA</span>
-                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">ZAWARCIE-TEAM</span>
+                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">IVOLT</span>
+                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">RATISAN</span>
+                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">KONMAR</span>
+                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">AUTO-FAN MOTORSPORT</span>
+                        <span className="text-lg md:text-xl font-black italic tracking-tighter hover:text-white cursor-default">ALBAR wywóz odpadów</span>
                     </div>
                 </div>
 
@@ -117,7 +118,7 @@ export const Footer = () => {
                                 placeholder={status === 'success' ? "ZAPISANO!" : "Twój numer..."}
                                 className={`w-full bg-slate-900 border ${status === 'success' ? 'border-green-500 text-green-500' : 'border-white/10 text-white'} rounded-2xl px-4 py-3 text-xs focus:outline-none focus:border-white transition-all`}
                             />
-                            <button 
+                            <button
                                 type="submit"
                                 disabled={status === 'loading' || status === 'success'}
                                 className={`absolute right-2 top-2 ${status === 'success' ? 'bg-green-500' : 'bg-white'} text-black p-1.5 rounded-xl hover:scale-105 transition shadow-lg disabled:opacity-50`}
