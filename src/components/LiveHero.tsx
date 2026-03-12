@@ -118,7 +118,7 @@ export const LiveHero = () => {
                     </div>
 
                     <div className="bg-white py-4 px-6 md:px-10 border-t border-slate-200 flex justify-center items-center gap-3 md:gap-4">
-                        <MapPin size={10} className="text-iskra-red shrink-0" />
+                        <MapPin size={10} className="text-black shrink-0" />
                         {/* ZMIANA: Lokalizacja na czarną */}
                         <span className="text-[9px] md:text-[10px] font-[1000] text-black uppercase tracking-[0.2em] text-center">
                             {match.location || 'Stadion Zawarcie'}

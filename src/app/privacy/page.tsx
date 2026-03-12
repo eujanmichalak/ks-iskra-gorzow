@@ -24,7 +24,7 @@ export default function PrivacyPage() {
             {/* CONTENT */}
             <main className="flex-1 max-w-4xl mx-auto px-6 py-20 leading-relaxed text-slate-600">
                 <div className="space-y-16">
-                    
+
                     {/* SEKCJA 1 */}
                     <section className="space-y-4">
                         <div className="flex items-center gap-3 text-slate-950">
@@ -74,7 +74,7 @@ export default function PrivacyPage() {
 
                     {/* STOPKA POLITYKI */}
                     <div className="pt-10 border-t border-slate-100 italic text-sm">
-                        Ostatnia aktualizacja: 2026-03-12. Wszystkie prawa zastrzeżone dla TS Iskra Gorzów.
+                        Ostatnia aktualizacja: 2026-03-12. Wszystkie prawa zastrzeżone dla Klub Sportowy Iskra Gorzów.
                     </div>
                 </div>
             </main>
