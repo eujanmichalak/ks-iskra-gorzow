@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { User } from 'lucide-react'; // Ikona zastępcza
 import { supabase } from '@/lib/supabase';
 
 export const TopScorers = () => {
@@ -13,13 +14,13 @@ export const TopScorers = () => {
                 .gt('goals', 0)
                 .order('goals', { ascending: false })
                 .limit(5);
-            
+
             if (data) setScorers(data);
         };
 
         fetchScorers();
-        
-        // Realtime update: jeśli admin zmieni gole, tutaj też się zmienią same
+
+        // Realtime update
         const channel = supabase.channel('scorer-updates')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => fetchScorers())
             .subscribe();
@@ -40,14 +41,33 @@ export const TopScorers = () => {
                     {scorers.length > 0 ? (
                         scorers.map((player, i) => (
                             <div key={player.id} className="group relative h-[450px] overflow-hidden rounded-[40px] border border-white/10 bg-slate-900 transition-all hover:border-iskra-red/50">
-                                <div className="absolute inset-0 z-0">
-                                    <img src={player.image || 'https://via.placeholder.com/400x600?text=Iskra+Gorzow'} className="h-full w-full object-cover opacity-60 group-hover:scale-110 transition-all duration-700" alt={player.name} />
+                                {/* Zdjęcie lub ikona brakującego zawodnika */}
+                                <div className="absolute inset-0 z-0 bg-slate-800 flex items-center justify-center">
+                                    {player.image ? (
+                                        <img
+                                            src={player.image}
+                                            className="h-full w-full object-cover opacity-60 group-hover:scale-110 transition-all duration-700"
+                                            alt={player.name}
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center text-slate-700">
+                                            <User size={80} strokeWidth={1} />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest mt-2">Brak Foto</span>
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
                                 </div>
+
+                                {/* Dane zawodnika */}
                                 <div className="absolute bottom-0 inset-x-0 p-8 z-20 text-white italic">
-                                    <span className="text-4xl font-[1000] tracking-tighter leading-none">{player.goals} <small className="text-xs text-iskra-red not-italic uppercase ml-1">Goli</small></span>
+                                    <span className="text-4xl font-[1000] tracking-tighter leading-none">
+                                        {player.goals}
+                                        <small className="text-xs text-iskra-red not-italic uppercase ml-1">Goli</small>
+                                    </span>
                                     <h3 className="text-xl font-[1000] uppercase mt-2 leading-tight">{player.name}</h3>
                                 </div>
+
+                                {/* Ranking */}
                                 <div className="absolute top-6 left-6 z-30 bg-white text-black font-black italic px-3 py-1 rounded-lg text-xs">#{i + 1}</div>
                             </div>
                         ))
