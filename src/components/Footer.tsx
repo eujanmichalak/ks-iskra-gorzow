@@ -63,10 +63,10 @@ export const Footer = () => {
                             Założony w 2005 roku klub z Gorzowskiego Zawarcia. Łączymy pasję do piłki z lokalną tożsamością.
                         </p>
                         <div className="flex gap-4">
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white hover:text-black transition-all border border-white/5">
+                            <a href="https://www.facebook.com/ksiskragorzow?locale=pl_PL" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white hover:text-black transition-all border border-white/5">
                                 <Facebook size={18} />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white hover:text-black transition-all border border-white/5">
+                            <a href="https://www.instagram.com/iskragorzow2005/" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white hover:text-black transition-all border border-white/5">
                                 <Instagram size={18} />
                             </a>
                         </div>
@@ -77,9 +77,9 @@ export const Footer = () => {
                         <h4 className="font-black uppercase italic text-sm mb-4">Klub</h4>
                         <div className="h-[3px] w-12 bg-white mb-6 md:mb-8 rounded-full"></div>
                         <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-tight">
-                            <li><a href="#" className="hover:text-white transition flex items-center gap-2 tracking-widest"><ExternalLink size={12} /> Nasza Kadra</a></li>
-                            <li><a href="#" className="hover:text-white transition flex items-center gap-2 tracking-widest"><ExternalLink size={12} /> Akademia Iskry</a></li>
-                            <li><a href="#" className="hover:text-white transition flex items-center gap-2 tracking-widest"><ExternalLink size={12} /> Historia Klubu</a></li>
+                            <li><a href="/players_page" className="hover:text-white transition flex items-center gap-2 tracking-widest"><ExternalLink size={12} /> Nasza Kadra</a></li>
+                            <li><a href="/academy" className="hover:text-white transition flex items-center gap-2 tracking-widest"><ExternalLink size={12} /> Akademia Iskry</a></li>
+                            <li><a href="/history" className="hover:text-white transition flex items-center gap-2 tracking-widest"><ExternalLink size={12} /> Historia Klubu</a></li>
                         </ul>
                     </div>
 
