@@ -12,7 +12,7 @@ export default function HistoryPage() {
 
             {/* MAIN CONTENT */}
             <main className="flex-1 flex items-center justify-center relative py-20 px-6">
-                
+
                 {/* TŁO W TLE (Delikatne napisy) */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none select-none flex items-center justify-center">
                     <h2 className="text-[25vw] font-[1000] text-slate-50 uppercase italic leading-none tracking-tighter opacity-50">
@@ -33,7 +33,7 @@ export default function HistoryPage() {
                             <span className="text-iskra-red text-outline-black" style={{ WebkitTextStroke: '2px #000', color: 'transparent' }}>BUDOWIE</span>
                         </h1>
                         <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-sm">
-                            Historia Dumy Zawarcia wkrótce tutaj się pojawi
+                            AKADEMIA DUMY ZAWARCIA WKRÓTCE TUTAJ SIĘ POJAWI
                         </p>
                     </div>
 
@@ -42,8 +42,8 @@ export default function HistoryPage() {
 
                     {/* BUTTON POWROTU */}
                     <div className="pt-8">
-                        <Link 
-                            href="/" 
+                        <Link
+                            href="/"
                             className="inline-flex items-center gap-3 bg-black text-white px-8 py-4 rounded-2xl font-black uppercase italic tracking-widest hover:bg-iskra-red transition-all active:scale-95 shadow-xl"
                         >
                             <ArrowLeft size={20} />
